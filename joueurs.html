@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <title>Gestion des Joueurs</title>
+</head>
+<body>
+<h1>Liste des joueurs</h1>
+<ul id="liste-joueurs"></ul>
+
+<form id="ajouter-joueur-form">
+    <input type="text" id="nom" placeholder="Nom du joueur">
+    <input type="text" id="poste" placeholder="Poste">
+    <button type="submit">Ajouter Joueur</button>
+</form>
+
+<script type="module">
+    import {ajouterJoueur, chargerJoueurs} from "./src/js/controllers/joueursController.js";
+
+    document.getElementById('ajouter-joueur-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const joueur = {
+            nom: document.getElementById('nom').value,
+            poste: document.getElementById('poste').value
+        };
+        await ajouterJoueur(joueur);
+    });
+
+    document.addEventListener('DOMContentLoaded', chargerJoueurs);
+</script>
+</body>
+</html>
