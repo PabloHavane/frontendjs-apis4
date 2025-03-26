@@ -17,12 +17,21 @@ function afficherListeJoueurs(joueurs) {
         const el = document.createElement('p');
         el.textContent = 'Aucun joueur trouvé';
     } else {
-        const liste = document.querySelector("#liste-joueurs");
-        liste.innerHTML = '';
-        joueurs.forEach(joueur => {
-            const element = document.createElement('li');
-            element.textContent = `${joueur.nom} - ${joueur.poste}`;
-            liste.appendChild(element);
+        const tbody = document.querySelector('#table-joueurs tbody');
+        tbody.innerHTML = ''; // vide le tableau avant de le remplir
+        joueurs.data.forEach(joueur => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+            <td>${joueur.id}</td>
+            <td>${joueur.nom}</td>
+            <td>${joueur.prenom}</td>
+            <td>${joueur.numeroLicence}</td>
+            <td>${joueur.dateNaissance}</td>
+            <td>${joueur.taille}</td>
+            <td>${joueur.poids}</td>
+            <td>${joueur.statut}</td>
+        `;
+            tbody.appendChild(tr);
         });
     }
 }
