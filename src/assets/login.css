@@ -14,7 +14,7 @@ body {
     align-items: center;
 
 
-    background-image: linear-gradient(rgba(39, 64, 124, 0.63),rgba(39, 64, 124, 0.63)), url("../../images/fond.jpg");
+    background-image: linear-gradient(rgba(39, 64, 124, 0.63),rgba(39, 64, 124, 0.63)), url("../../public/fond.jpg");
     background-size: cover;
     background-position: center ;
 }

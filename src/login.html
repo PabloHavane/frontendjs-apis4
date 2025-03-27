@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="assets/login.css">
+  <style>
+    .error {
+      color: #ff0000;
+      background-color: #ffeeee;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<form id="loginForm">
+  <h1>Connexion</h1>
+  <div class="champ">
+    <label for="username">Nom d'utilisateur</label>
+    <input type="text" id="username" name="username" placeholder="Nom" required>
+  </div>
+  <div class="champ">
+    <label for="password">Mot de passe</label>
+    <input type="password" id="password" name="password" placeholder="Mot de passe" required>
+  </div>
+  <input class="bouton" type="submit" value="Connexion">
+  <div id="error_message" class="error" style="display: none;"></div>
+</form>
+
+<script type="module">
+  document.getElementById('loginForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const errorMessage = document.getElementById('error_message');
+
+    try {
+      const response = await fetch('http://localhost:8001/api/authApi.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === 'success' && data.data.token) {
+          // Store the token in session storage
+          sessionStorage.setItem('jwt_token', data.data.token);
+          sessionStorage.setItem('username', username);
+          window.location.href = 'joueurs.html';
+        } else {
+          throw new Error('Réponse de l\'API invalide');
+        }
+      } else {
+        throw new Error('Identifiant ou mot de passe incorrect. Veuillez réessayer');
+      }
+    } catch (error) {
+      errorMessage.textContent = error.message;
+      errorMessage.style.display = 'block';
+    }
+  });
+</script>
+</body>
+</html>
