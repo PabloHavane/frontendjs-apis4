@@ -1,5 +1,6 @@
 import Api from "../api.js";
 
+// Récupère le jeton d'authentification depuis le localStorage (données stockées dans le navigateur du client)
 const token = localStorage.getItem('authToken');
 
 export async function chargerJoueurs() {
