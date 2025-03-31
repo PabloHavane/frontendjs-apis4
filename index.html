@@ -1,13 +1,135 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tableau de bord - Coach Assistant</title>
+  <link rel="stylesheet" href="src/assets/index.css">
+</head>
+<body>
+<header class="header">
+  <h1 class="header-title">Bienvenue, Coach !</h1>
+  <nav class="header-nav">
+    <a href="index.html" class="active">Statistiques</a>
+    <a href="gestionJoueurs.html">Gestion des joueurs</a>
+    <a href="gestionMatchs.html">Gestion des matchs</a>
+    <a href="logout.html">Déconnexion</a>
+  </nav>
+</header>
+
+<main class="main">
+  <section id="statistiques-resume">
+    <h2>Statistiques générales</h2>
+    <div class="stats">
+      <div class="stats-matchs">
+        <p>Matchs en attente : <span id="matchs-attente"></span></p>
+        <p>Matchs joués : <span id="total-matchs"></span></p>
+        <p>Victoires : <span id="pourcentage-victoires"></span></p>
+        <p>Défaites : <span id="pourcentage-defaites"></span></p>
+        <p>Matchs nuls : <span id="pourcentage-nuls"></span></p>
+      </div>
+      <div class="stats-joueurs">
+        <p>Nombre total de joueurs : <span id="total-joueurs"></span></p>
+        <p>Joueurs actifs : <span id="joueurs-actifs"></span></p>
+        <p>Joueurs blessés : <span id="joueurs-blesses"></span></p>
+        <p>Joueurs suspendus : <span id="joueurs-suspendus"></span></p>
+        <p>Joueurs absents : <span id="joueurs-absents"></span></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="matchs-a-venir">
+    <h2>Prochains matchs</h2>
+    <table class="table">
+      <thead>
+      <tr>
+        <th>Date et heure</th>
+        <th>Adversaire</th>
+        <th>Lieu</th>
+      </tr>
+      </thead>
+      <tbody id="matchs-a-venir-body">
+      </tbody>
+    </table>
+  </section>
+
+  <section id="actions-rapides">
+    <h2>Actions rapides</h2>
+    <button onclick="location.href='ajoutJoueur.html'">Ajouter un joueur</button>
+    <button onclick="location.href='ajoutMatch.html'">Ajouter un match</button>
+    <button onclick="location.href='feuilleDeMatchMenu.html'">Préparer une feuille de match</button>
+  </section>
+</main>
+
+<script type="module">
+  import Api from './src/js/api.js';
+
+  // Vérifie si l'utilisateur est connecté
+  if (!sessionStorage.getItem('jwt_token')) {
+    window.location.href = 'login.html';
+  }
+
+  async function fetchData() {
+    try {
+      const token = sessionStorage.getItem('jwt_token');
+      const matchsReponse = await Api.get('/MatchsEndpoint.php', token);
+      const joueursReponse = await Api.get('/JoueursEndpoint.php', token);
+
+      const matchs = Array.isArray(matchsReponse.data) ? matchsReponse.data : [];
+      const joueurs = Array.isArray(joueursReponse.data) ? joueursReponse.data : [];
+
+      // Mise à jour des statistiques des matchs
+      let matchsEnAttente = 0, matchJoués = 0, victoires = 0, defaites = 0, nuls = 0;
+      matchs.forEach(match => {
+        if (match.resultat !== 'En attente' && match.resultat !== null) {
+          matchJoués++;
+          if (match.resultat === 'Victoire') victoires++;
+          else if (match.resultat === 'Défaite') defaites++;
+          else if (match.resultat === 'Match nul') nuls++;
+        } else {
+          matchsEnAttente++;
+        }
+      });
+
+      document.getElementById('matchs-attente').textContent = matchsEnAttente;
+      document.getElementById('total-matchs').textContent = matchJoués;
+      document.getElementById('pourcentage-victoires').textContent = `${victoires} (${(victoires / matchJoués * 100).toFixed(2)}%)`;
+      document.getElementById('pourcentage-defaites').textContent = `${defaites} (${(defaites / matchJoués * 100).toFixed(2)}%)`;
+      document.getElementById('pourcentage-nuls').textContent = `${nuls} (${(nuls / matchJoués * 100).toFixed(2)}%)`;
+
+      // Mise à jour des statistiques des joueurs
+      const totalJoueurs = joueurs.length;
+      const joueursActifs = joueurs.filter(joueur => joueur.statut === 'Actif').length;
+      const joueursBlesses = joueurs.filter(joueur => joueur.statut === 'Blessé').length;
+      const joueursSuspendus = joueurs.filter(joueur => joueur.statut === 'Suspendu').length;
+      const joueursAbsents = joueurs.filter(joueur => joueur.statut === 'Absent').length;
+
+      document.getElementById('total-joueurs').textContent = totalJoueurs;
+      document.getElementById('joueurs-actifs').textContent = joueursActifs;
+      document.getElementById('joueurs-blesses').textContent = joueursBlesses;
+      document.getElementById('joueurs-suspendus').textContent = joueursSuspendus;
+      document.getElementById('joueurs-absents').textContent = joueursAbsents;
+
+      // Mise à jour des matchs à venir
+      const matchsAVenirBody = document.getElementById('matchs-a-venir-body');
+      matchsAVenirBody.innerHTML = '';
+      matchs.forEach(match => {
+        if (match.resultat === 'En attente' || match.resultat === null) {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${new Date(match.dateHeure).toLocaleString('fr-FR')}</td>
+            <td>${match.nomAdversaire}</td>
+            <td>${match.lieu}</td>
+          `;
+          matchsAVenirBody.appendChild(row);
+        }
+      });
+    } catch (error) {
+      console.error('Erreur lors de la récupération des données:', error);
+    }
+  }
+
+  fetchData();
+</script>
+</body>
 </html>

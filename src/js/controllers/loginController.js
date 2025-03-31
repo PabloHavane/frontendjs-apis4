@@ -16,7 +16,7 @@ export async function Connexion(corp) {
                 // Stocke le token et le nom d'utilisateur dans le sessionStorage
                 sessionStorage.setItem('jwt_token', data.data.token);
                 sessionStorage.setItem('username', corp.username);
-                window.location.href = 'joueurs.html';
+                window.location.href = 'index.html';
             } else {
                 throw new Error('Réponse de l\'API invalide');
             }
