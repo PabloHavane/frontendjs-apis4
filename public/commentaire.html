@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commentaire(s)</title>
+    <link rel="stylesheet" href="src/assets/commentaire.css">
+</head>
+<body>
+<header class="header">
+    <h1 class="header-title">Bienvenue, Coach !</h1>
+    <nav class="header-nav">
+        <a href="index.html">Statistiques</a>
+        <a href="gestionJoueurs.html">Gestion des joueurs</a>
+        <a href="gestionMatchs.html">Gestion des matchs</a>
+        <a href="logout.html">Déconnexion</a>
+    </nav>
+</header>
+<main class="main">
+    <h2>Commentaires existants</h2>
+    <ul id="commentairesList"></ul>
+    <button id="ajouterCommentaireBtn">Ajouter un commentaire</button>
+</main>
+
+<script type="module">
+    import Api from './src/js/api.js';
+
+    // Vérifie si l'utilisateur est connecté
+    if (!sessionStorage.getItem('jwt_token')) {
+        window.location.href = 'login.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const idJoueur = urlParams.get('id');
+
+        try {
+            const token = sessionStorage.getItem('jwt_token');
+            const response = await Api.get(`/CommentairesEndpoint.php?idJoueur=${idJoueur}`, token);
+            const commentaires = response.data;
+
+            const commentairesList = document.getElementById('commentairesList');
+            if (commentaires.length > 0) {
+                commentaires.forEach(commentaire => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <p>${commentaire.commentaire}</p>
+                        <div class="lesBoutons">
+                            <button onclick="location.href='modifierCommentaire.html?id=${commentaire.id}&idJoueur=${idJoueur}'">Modifier</button>
+                            <button class="supprimer" onclick="supprimerCommentaire(${commentaire.id}, ${idJoueur})">Supprimer</button>
+                        </div>
+                    `;
+                    commentairesList.appendChild(li);
+                });
+            } else {
+                commentairesList.innerHTML = '<p>Aucun commentaire trouvé pour ce joueur.</p>';
+            }
+        } catch (error) {
+            console.error('Erreur lors de la récupération des commentaires:', error);
+        }
+
+        document.getElementById('ajouterCommentaireBtn').addEventListener('click', () => {
+            location.href = `ajouterCommentaire.html?id=${idJoueur}`;
+        });
+    });
+
+    window.supprimerCommentaire = async function(idCommentaire, idJoueur) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
+            try {
+                const token = sessionStorage.getItem('jwt_token');
+                await Api.delete(`/CommentairesEndpoint.php?id=${idCommentaire}`, token);
+                location.href = `commentaire.html?id=${idJoueur}`;
+            } catch (error) {
+                console.error('Erreur lors de la suppression du commentaire:', error);
+            }
+        }
+    }
+</script>
+</body>
+</html>
