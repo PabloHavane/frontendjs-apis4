@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modification d'un joueur - Coach Assistant</title>
+  <link rel="stylesheet" href="src/assets/modifierJoueur.css">
+</head>
+<body>
+<header class="header">
+  <h1 class="header-title">Bienvenue, Coach !</h1>
+  <nav class="header-nav">
+    <a href="gestionJoueurs.html">Gestion des joueurs</a>
+    <a href="gestionMatchs.html">Gestion des matchs</a>
+    <a href="index.html">Statistiques</a>
+    <a href="logout.html">Déconnexion</a>
+  </nav>
+</header>
+<main class="main">
+  <h2>Modifier les informations du joueur</h2>
+  <form id="modifier-joueur-form" class="form-modifier-joueur">
+    <input type="hidden" id="id" name="id">
+
+    <label for="nom">Nom :</label>
+    <input type="text" id="nom" name="nom" required>
+
+    <label for="prenom">Prénom :</label>
+    <input type="text" id="prenom" name="prenom" required>
+
+    <label for="dateNaissance">Date de naissance :</label>
+    <input type="date" id="dateNaissance" name="dateNaissance" required>
+
+    <label for="taille">Taille :</label>
+    <input type="number" id="taille" name="taille" required>
+
+    <label for="poids">Poids :</label>
+    <input type="number" id="poids" name="poids" required>
+
+    <label for="numeroLicence">Numéro de licence :</label>
+    <input type="text" id="numeroLicence" name="numeroLicence" required>
+
+    <label for="statut">Statut :</label>
+    <select id="statut" name="statut" required>
+      <option value="Actif">Actif</option>
+      <option value="Blessé">Blessé</option>
+      <option value="Suspendu">Suspendu</option>
+      <option value="Absent">Absent</option>
+    </select>
+
+    <button type="submit">Enregistrer les modifications</button>
+  </form>
+  <div id="message"></div>
+</main>
+
+<script type="module">
+  import Api from './src/js/api.js';
+
+  // Vérifie si l'utilisateur est connecté
+  if (!sessionStorage.getItem('jwt_token')) {
+    window.location.href = 'login.html';
+  }
+
+  async function fetchJoueur(id) {
+    try {
+      const token = sessionStorage.getItem('jwt_token');
+      const response = await Api.get(`/JoueursEndpoint.php?id=${id}`, token);
+      const joueur = response.data[0];
+
+      document.getElementById('id').value = joueur.id;
+      document.getElementById('nom').value = joueur.nom;
+      document.getElementById('prenom').value = joueur.prenom;
+      document.getElementById('dateNaissance').value = joueur.dateNaissance;
+      document.getElementById('taille').value = joueur.taille;
+      document.getElementById('poids').value = joueur.poids;
+      document.getElementById('numeroLicence').value = joueur.numeroLicence;
+      document.getElementById('statut').value = joueur.statut;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des données du joueur:', error);
+    }
+  }
+
+  document.getElementById('modifier-joueur-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const joueur = {
+      id: document.getElementById('id').value,
+      nom: document.getElementById('nom').value,
+      prenom: document.getElementById('prenom').value,
+      dateNaissance: document.getElementById('dateNaissance').value,
+      taille: document.getElementById('taille').value,
+      poids: document.getElementById('poids').value,
+      numero: document.getElementById('numeroLicence').value,
+      statut: document.getElementById('statut').value
+    };
+
+    try {
+      const token = sessionStorage.getItem('jwt_token');
+      const response = await Api.put(`/JoueursEndpoint.php?id=${joueur.id}`, joueur, token);
+      if (response.status === 200) {
+        document.getElementById('message').textContent = 'Les informations du joueur ont bien été modifiées !';
+        window.location.href = 'gestionJoueurs.html';
+      } else {
+        document.getElementById('message').textContent = 'Erreur lors de la modification des informations du joueur';
+      }
+    } catch (error) {
+      document.getElementById('message').textContent = 'Erreur lors de la modification des informations du joueur';
+      console.error('Erreur:', error);
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const joueurId = urlParams.get('id');
+    if (joueurId) {
+      fetchJoueur(joueurId);
+    }
+  });
+</script>
+</body>
+</html>

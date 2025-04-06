@@ -1,10 +1,111 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des joueurs - Coach Assistant</title>
+    <link rel="stylesheet" href="src/assets/pageGestion.css">
 </head>
 <body>
+<header class="header">
+    <h1 class="header-title">Bienvenue, Coach !</h1>
+    <nav class="header-nav">
+        <a href="index.html">Statistiques</a>
+        <a href="gestionJoueurs.html" class="active">Gestion des joueurs</a>
+        <a href="gestionMatchs.html">Gestion des matchs</a>
+        <a href="logout.html">Déconnexion</a>
+    </nav>
+</header>
+<main class="main">
+    <h2>Liste des joueurs</h2>
+    <div class="tableau-container">
+        <table class="tableau">
+            <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Date de naissance</th>
+                <th>Taille</th>
+                <th>Poids</th>
+                <th>Numéro de licence</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="joueurs-body">
+            </tbody>
+        </table>
+    </div>
+    <button class="horsTab" onclick="location.href='ajoutJoueur.html'">Ajouter un joueur</button>
 
+    <!-- Section des statistiques générales -->
+    <section id="statistiques-generales">
+        <h2>Statistiques générales</h2>
+        <p>Nombre total de joueurs : <span id="total-joueurs"></span></p>
+        <p>Nombre de joueurs actifs : <span id="joueurs-actifs"></span></p>
+        <p>Nombre de joueurs blessés : <span id="joueurs-blesses"></span></p>
+        <p>Nombre de joueurs suspendus : <span id="joueurs-suspendus"></span></p>
+        <p>Nombre de joueurs absents : <span id="joueurs-absents"></span></p>
+    </section>
+</main>
+
+<script type="module">
+    import Api from './src/js/api.js';
+
+    // Vérifie si l'utilisateur est connecté
+    if (!sessionStorage.getItem('jwt_token')) {
+        window.location.href = 'login.html';
+    }
+
+    async function fetchJoueurs() {
+        try {
+            const token = sessionStorage.getItem('jwt_token');
+            const response = await Api.get('/JoueursEndpoint.php', token);
+            const joueurs = Array.isArray(response.data) ? response.data : [];
+
+            // Mise à jour du tableau des joueurs
+            const joueursBody = document.getElementById('joueurs-body');
+            joueursBody.innerHTML = '';
+            joueurs.forEach(joueur => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+          <td>${joueur.nom}</td>
+          <td>${joueur.prenom}</td>
+          <td>${joueur.dateNaissance}</td>
+          <td>${joueur.taille}</td>
+          <td>${joueur.poids}</td>
+          <td>${joueur.numeroLicence}</td>
+          <td>${joueur.statut}</td>
+          <td>
+            <button onclick="location.href='voirMatchs.html?joueur_id=${joueur.id}'">Voir les matchs</button>
+            <button class="supprimer" onclick="confirmSuppression(${joueur.id})">Supprimer</button>
+            <button onclick="location.href='modifierJoueur.html?id=${joueur.id}'">Modifier</button>
+            <button onclick="location.href='commentaire.html?id=${joueur.id}'">Voir commentaire</button>
+          </td>
+        `;
+                joueursBody.appendChild(row);
+            });
+
+            // Mise à jour des statistiques générales
+            document.getElementById('total-joueurs').textContent = joueurs.length;
+            document.getElementById('joueurs-actifs').textContent = joueurs.filter(joueur => joueur.statut === 'Actif').length;
+            document.getElementById('joueurs-blesses').textContent = joueurs.filter(joueur => joueur.statut === 'Blessé').length;
+            document.getElementById('joueurs-suspendus').textContent = joueurs.filter(joueur => joueur.statut === 'Suspendu').length;
+            document.getElementById('joueurs-absents').textContent = joueurs.filter(joueur => joueur.statut === 'Absent').length;
+        } catch (error) {
+            console.error('Erreur lors de la récupération des données:', error);
+        }
+    }
+
+    window.confirmSuppression = function(id) {
+        if (confirm("Êtes-vous sûr de vouloir supprimer ce joueur ?")) {
+            // Appel à l'API pour supprimer le joueur
+            Api.delete(`/JoueursEndpoint.php?id=${id}`, sessionStorage.getItem('jwt_token'))
+                .then(() => fetchJoueurs())
+                .catch(error => console.error('Erreur lors de la suppression du joueur:', error));
+        }
+    }
+    document.addEventListener('DOMContentLoaded', fetchJoueurs);
+</script>
 </body>
 </html>
