@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajouter un commentaire</title>
+  <link rel="stylesheet" href="src/assets/ajouterCommentaire.css">
+</head>
+<body>
+<header class="header">
+  <h1 class="header-title">Ajouter un commentaire</h1>
+  <nav class="header-nav">
+    <a href="gestionJoueurs.html">Gestion des joueurs</a>
+    <a href="gestionMatchs.html">Gestion des matchs</a>
+    <a href="index.html">Statistiques</a>
+    <a href="logout.html">Déconnexion</a>
+  </nav>
+</header>
+<main class="main">
+  <h2>Nouveau commentaire</h2>
+  <form id="ajouterCommentaireForm" class="form-ajouter-commentaire">
+    <input type="hidden" id="idJoueur">
+
+    <label for="commentaire">Commentaire :</label>
+    <textarea id="commentaire" name="commentaire" required></textarea>
+
+    <button type="submit">Ajouter le commentaire</button>
+  </form>
+</main>
+
+<script type="module">
+  import Api from './src/js/api.js';
+
+  // Vérifie si l'utilisateur est connecté
+  if (!sessionStorage.getItem('jwt_token')) {
+    window.location.href = 'login.html';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idJoueur = urlParams.get('id');
+    document.getElementById('idJoueur').value = idJoueur;
+  });
+
+  document.getElementById('ajouterCommentaireForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const idJoueur = document.getElementById('idJoueur').value;
+    const commentaire = document.getElementById('commentaire').value;
+
+    try {
+      const token = sessionStorage.getItem('jwt_token');
+      const response = await Api.post('/CommentairesEndpoint.php', { idJoueur, commentaire }, token);
+
+      if (response.status === 201) {
+        alert('Le commentaire a bien été ajouté !');
+        window.location.href = `commentaire.html?id=${idJoueur}`;
+      } else {
+        alert('Erreur lors de l\'ajout du commentaire');
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout du commentaire:', error);
+      alert('Erreur lors de l\'ajout du commentaire');
+    }
+  });
+</script>
+</body>
+</html>
