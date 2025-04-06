@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feuille de Match - Menu</title>
+    <link rel="stylesheet" href="src/assets/pageGestion.css">
+</head>
+<body>
+<header class="header">
+    <h1 class="header-title">Bienvenue, Coach !</h1>
+    <nav class="header-nav">
+        <a href="index.html">Statistiques</a>
+        <a href="gestionJoueurs.html">Gestion des joueurs</a>
+        <a href="gestionMatchs.html">Gestion des matchs</a>
+        <a href="logout.html">Déconnexion</a>
+    </nav>
+</header>
+<main class="main">
+    <section id="matchs-a-venir">
+        <h2>Matchs à venir</h2>
+        <table class="tableau">
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Adversaire</th>
+                <th>Lieu</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody id="matchsAVenirList"></tbody>
+        </table>
+    </section>
+</main>
+<footer class="footer">
+    <p>© 2024 Coach Hocki Assistant</p>
+</footer>
+
+<script type="module">
+    import Api from './src/js/api.js';
+
+    // Vérifie si l'utilisateur est connecté
+    if (!sessionStorage.getItem('jwt_token')) {
+        window.location.href = 'login.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const token = sessionStorage.getItem('jwt_token');
+            const response = await Api.get('/MatchsEndpoint.php', token);
+            const tousLesMatchs = response.data;
+
+            const matchsAVenir = tousLesMatchs.filter(match => {
+                const matchDate = new Date(match.dateHeure);
+                return matchDate > new Date();
+            });
+
+            const matchsAVenirList = document.getElementById('matchsAVenirList');
+            matchsAVenir.forEach(match => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(match.dateHeure).toLocaleString('fr-FR')}</td>
+                    <td>${match.nomAdversaire}</td>
+                    <td>${match.lieu}</td>
+                    <td>
+                        <button onclick="location.href='feuilleDeMatch.html?match_id=${match.id}'">Créer/Modifier Feuille de Match</button>
+                    </td>
+                `;
+                matchsAVenirList.appendChild(row);
+            });
+        } catch (error) {
+            console.error('Erreur lors de la récupération des matchs à venir:', error);
+        }
+    });
+</script>
+</body>
+</html>
