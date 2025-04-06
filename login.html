@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
-  <link rel="stylesheet" href="assets/login.css">
+  <link rel="stylesheet" href="src/assets/login.css">
   <style>
     .error {
       color: #ff0000;
@@ -32,39 +32,18 @@
 </form>
 
 <script type="module">
+  import { Connexion } from "./src/js/controllers/loginController.js";
+
   document.getElementById('loginForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
     const errorMessage = document.getElementById('error_message');
 
-    try {
-      const response = await fetch('http://localhost:8001/api/authApi.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, password })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.status === 'success' && data.data.token) {
-          // Store the token in session storage
-          sessionStorage.setItem('jwt_token', data.data.token);
-          sessionStorage.setItem('username', username);
-          window.location.href = 'joueurs.html';
-        } else {
-          throw new Error('Réponse de l\'API invalide');
-        }
-      } else {
-        throw new Error('Identifiant ou mot de passe incorrect. Veuillez réessayer');
-      }
-    } catch (error) {
-      errorMessage.textContent = error.message;
-      errorMessage.style.display = 'block';
-    }
+    const corp = {
+      username: document.getElementById('username').value,
+      password: document.getElementById('password').value
+    };
+    await Connexion(corp);
   });
 </script>
 </body>

@@ -1,10 +1,13 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+// URL de base de l'API, récupérée des variables d'environnement
+const API_BASE_URL = "http://localhost:8000/src" //import.meta.env.VITE_API_BASE_URL;
 
+// Objet Api contenant des méthodes pour effectuer des requêtes HTTP
 const Api = {
     get: async (url, token) => {
+        // Effectue une requête GET à l'URL spécifiée avec le token d'authentification
         const response = await fetch(`${API_BASE_URL}${url}`, {
             headers: {
-                "Authorization": `Bearer ${token}`,
+                "Authorization": `Bearer ${token}`, // Ajoute le token d'authentification dans les en-têtes
                 "Content-Type": "application/json"
             }
         });
@@ -18,7 +21,7 @@ const Api = {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(data) // Création du corp de la requête à partir des données passées en paramètre
         });
         return response.json();
     },
@@ -46,4 +49,4 @@ const Api = {
     }
 };
 
-export default Api;
+export default Api; // Exporte l'objet Api pour pouvoir l'utiliser dans d'autres fichiers

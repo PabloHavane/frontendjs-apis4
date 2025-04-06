@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter vos nouveaux matchs</title>
+    <link rel="stylesheet" href="src/assets/AjoutJoueur.css">
+</head>
+<body>
+<header class="header">
+    <h1 class="header-title">Bienvenue, Coach !</h1>
+    <nav class="header-nav">
+        <a href="index.html">Statistiques</a>
+        <a href="gestionJoueurs.html">Gestion des joueurs</a>
+        <a href="gestionMatchs.html">Gestion des matchs</a>
+        <a href="logout.html">Déconnexion</a>
+    </nav>
+</header>
+<form id="ajoutMatchForm">
+    <label for="nomAdversaire">Nom de l'adversaire</label>
+    <input type="text" id="nomAdversaire" name="nomAdversaire" placeholder="Les lynxs de Bagnouls" required>
+    <label for="lieu">Lieu de la rencontre</label>
+    <input type="text" id="lieu" name="lieu" placeholder="Bagnouls" required>
+    <label for="dateHeure">Date et heure de la rencontre</label>
+    <input type="datetime-local" id="dateHeure" name="dateHeure" required>
+    <button type="submit">Ajouter</button>
+</form>
+<footer>
+    <p>© 2024 Coach Hocki Assistant</p>
+</footer>
+
+<script type="module">
+    import Api from './src/js/api.js';
+
+    document.getElementById('ajoutMatchForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const nomAdversaire = document.getElementById('nomAdversaire').value;
+        const lieu = document.getElementById('lieu').value;
+        const dateHeure = document.getElementById('dateHeure').value;
+
+        try {
+            const token = sessionStorage.getItem('jwt_token');
+            const response = await Api.post('/MatchsEndpoint.php', { nomAdversaire, lieu, dateHeure }, token);
+
+            if (response.status === 201) {
+                alert('Le match a bien été ajouté !');
+                window.location.href = 'index.html';
+            } else {
+                alert('Erreur lors de l\'ajout du match');
+            }
+        } catch (error) {
+            console.error('Erreur lors de l\'ajout du match:', error);
+            alert('Erreur lors de l\'ajout du match');
+        }
+    });
+</script>
+</body>
+</html>
