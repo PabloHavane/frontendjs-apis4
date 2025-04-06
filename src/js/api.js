@@ -1,5 +1,5 @@
 // URL de base de l'API, récupérée des variables d'environnement
-const API_BASE_URL = "http://localhost:8000/src" //import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Objet Api contenant des méthodes pour effectuer des requêtes HTTP
 const Api = {

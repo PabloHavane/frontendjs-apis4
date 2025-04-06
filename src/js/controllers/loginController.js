@@ -1,8 +1,9 @@
 export async function Connexion(corp) {
     const errorMessage = document.getElementById('error_message');
+    const url = import.meta.env.VITE_API_AUTH_URL;
 
     try {
-        const response = await fetch('http://localhost:8001/api/authApi.php', {
+        const response = await fetch(url.toString(), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
